@@ -14,7 +14,7 @@
 
 import { Firmata, WebSerialTransport } from "./firmata-web/index.js";
 
-// s4aBoard //////////////////////////////////////////////////////
+// s4aConnector //////////////////////////////////////////////////////
 
 // From Snap4Arduino arduino.js 
 function s4aConnector (stage) {
@@ -132,6 +132,72 @@ s4aConnector.prototype.digitalWrite = function (pin, value, proc) {
     }
 };
 
+s4aConnector.prototype.pwmWrite = function (pin, value, proc) {
+    var board = this.board;
+    if (board && board.isReady) {
+        if (board.pins[pin].mode != board.MODES.PWM) {
+            board.pinMode(pin, board.MODES.PWM);
+            proc.pushContext('doYield');
+            proc.pushContext();
+        }
+        board.analogWrite(pin, value);
+    } else {
+        throw new Error('Board not connected');
+    }
+};
+
+s4aConnector.prototype.servoWrite = function (pin, value, proc) {
+    var board = this.board,
+        numericValue = parseInt(value);
+
+    if (board && board.isReady) {
+        if (value == 'disconnected') {
+            board.pinMode(pin, board.MODES.OUTPUT);
+            return;
+        }
+        if (board.pins[pin].mode != board.MODES.SERVO) {
+            board.pinMode(pin, board.MODES.SERVO);
+            board.servoConfig(pin, 600, 2400);
+        }
+
+        switch (value) {
+            case 'clockwise':
+                numericValue = 1200;
+                break;
+            case 'counter-clockwise':
+                numericValue = 1800;
+                break;
+            case 'stopped':
+                numericValue = 1500;
+                break;
+        }
+        board.servoWrite(pin, numericValue);
+    } else {
+        throw new Error('Board not connected');
+    }
+};
+
+s4aConnector.prototype.reportDigitalReading = function (pin, proc) {
+    var board = this.board;
+    if (board && board.isReady) {
+        if (board.pins[pin].mode != board.MODES.INPUT) {
+            board.pinMode(pin, board.MODES.INPUT);
+            board.pins[pin].reporting = 1;
+        } else {
+            if (board.pins[pin].reporting != 2) {
+                //board.reportDigitalPin(pin, 1);
+                board.digitalRead(pin, function () {board.pins[pin].reporting = 2});
+            } else {
+                return board.pins[pin].value == 1;
+            }
+        }
+        proc.pushContext('doYield');
+        proc.pushContext();
+    } else {
+        throw new Error('Board not connected');
+    }
+};
+
 // S4A Connector buttons
 
 SnapExtensions.buttons.palette.push({
@@ -184,5 +250,32 @@ SnapExtensions.primitives.set(
         var stage = this.parentThatIsA(StageMorph);
         if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
         stage.s4aConnector.digitalWrite(pin, value, proc);
+    }
+);
+
+SnapExtensions.primitives.set(
+    's4a_pwmWrite(pin, value)',
+    function (pin, value, proc) {
+        var stage = this.parentThatIsA(StageMorph);
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        stage.s4aConnector.pwmWrite(pin, value, proc);
+    }
+);
+
+SnapExtensions.primitives.set(
+    's4a_servoWrite(pin, value)',
+    function (pin, value, proc) {
+        var stage = this.parentThatIsA(StageMorph);
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        stage.s4aConnector.servoWrite(pin, value, proc);
+    }
+);
+
+SnapExtensions.primitives.set(
+    's4a_reportDigitalReading(pin)',
+    function (pin, proc) {
+        var stage = this.parentThatIsA(StageMorph);
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        return stage.s4aConnector.reportDigitalReading(pin, proc);
     }
 );
