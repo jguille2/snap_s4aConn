@@ -198,6 +198,27 @@ s4aConnector.prototype.reportDigitalReading = function (pin, proc) {
     }
 };
 
+s4aConnector.prototype.reportAnalogReading = function (pin, proc) {
+    var board = this.board;
+    if (board && board.isReady) {
+        if (board.pins[board.analogPins[pin]].mode != board.MODES.ANALOG) {
+            board.pinMode(pin, board.MODES.ANALOG);
+            board.pins[board.analogPins[pin]].reporting = 1;
+        } else {
+            if (board.pins[board.analogPins[pin]].reporting != 2) {
+                //board.reportAnalogPin(pin, 1);
+                board.analogRead(pin, function () {board.pins[board.analogPins[pin]].reporting = 2});
+            } else {
+                return board.pins[board.analogPins[pin]].value;
+            }
+        }
+        proc.pushContext('doYield');
+        proc.pushContext();
+    } else {
+        throw new Error('Board not connected');
+    }
+};
+
 // S4A Connector buttons
 
 SnapExtensions.buttons.palette.push({
@@ -277,5 +298,14 @@ SnapExtensions.primitives.set(
         var stage = this.parentThatIsA(StageMorph);
         if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
         return stage.s4aConnector.reportDigitalReading(pin, proc);
+    }
+);
+
+SnapExtensions.primitives.set(
+    's4a_reportAnalogReading(pin)',
+    function (pin, proc) {
+        var stage = this.parentThatIsA(StageMorph);
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        return stage.s4aConnector.reportAnalogReading(pin, proc);
     }
 );
