@@ -3,7 +3,7 @@ import * as Types from "./types.js"
 
 // Polyfill
 import {Buffer} from "./buffer-es6/index.js"
-
+world.Buffer = Buffer;
 // Internal Dependencies
 import Encoder7Bit from "./encoder7bit.js"
 import OneWire from "./onewireutils.js"
@@ -427,9 +427,83 @@ const SYSEX_RESPONSE = {
     }
   },
 
+/**
+ * SA5Firmata SYSEX_RESPONSE definitions
+ * Including this into firmata.js because chromium operation
+ */
 
+//joyX Nunchuk
+  [0xC0](board) {
+    var value = (board.buffer[2] & 0x7F) | ((board.buffer[3] & 0x7F) << 7);
+    board.emit('joyX', value);
+  },
+
+//joyY Nunchuk
+  [0xC1](board) {
+    var value = (board.buffer[2] & 0x7F) | ((board.buffer[3] & 0x7F) << 7);
+    board.emit('joyY', value);
+  },
+
+//butZ Nunchuk
+  [0xC2](board) {
+    var value = (board.buffer[2] & 0x7F);
+    board.emit('butZ', value);
+  },
+
+//butC Nunchuk
+  [0xC3](board) {
+    var value = (board.buffer[2] & 0x7F);
+    board.emit('butC', value);
+  },
+
+//accX Nunchuk
+  [0xC4](board) {
+    var value = (board.buffer[2] & 0x7F) | ((board.buffer[3] & 0x7F) << 7);
+    board.emit('accX', value);
+  },
+
+//accY Nunchuk
+  [0xC5](board) {
+    var value = (board.buffer[2] & 0x7F) | ((board.buffer[3] & 0x7F) << 7);
+    board.emit('accY', value);
+  },
+  
+//accZ Nunchuk
+  [0xC6](board) {
+    var value = (board.buffer[2] & 0x7F) | ((board.buffer[3] & 0x7F) << 7);
+    board.emit('accZ', value);
+  },
+
+//pulseIn
+  [0xC8](board) {
+    const pulse = (board.buffer[2] & 0x7F) << 25| (board.buffer[3] & 0x7F) << 18 | (board.buffer[4] & 0x7F) << 11 | (board.buffer[5] & 0x7F) << 4 | (board.buffer[6] & 0x7F) >> 3;
+    const pinResp = (board.buffer[6] & parseInt("0111",2)) << 5 | (board.buffer[7] & parseInt("011111",2));
+    //board[`pulseIn-${pinResp}`] = pulse;
+    board.emit(`pulseIn-${pinResp}`, pulse);
+  },
+
+//ping
+  [0xCA](board) {
+    var pulse = (board.buffer[2] & 0x7F) << 9| (board.buffer[3] & 0x7F) << 2 | (board.buffer[4] & parseInt("01100000",2)) >> 5;
+    var pinResponse = (board.buffer[4] & parseInt("011111",2)) << 3 | (board.buffer[5] & parseInt("0111",2));
+    board.emit('ping-' + pinResponse, pulse);
+  },
+
+//ir reporter
+  [0xCB](board) {
+    var irResult = (board.buffer[2] & 0x7F) << 25| (board.buffer[3] & 0x7F) << 18 | (board.buffer[4] & 0x7F) << 11 | (board.buffer[5] & 0x7F) << 4 | (board.buffer[6] & 0x7F) >> 3;
+    irResult = irResult & 0xFFFFFF;
+    board.emit('IRrec', irResult);
+  },
+
+//dht11
+  [0xCF](board) {
+    var response = (board.buffer[2] & 0x7F) << 1 | (board.buffer[3] & 0x01);
+    var rpin = board.buffer[4] >> 1;
+    var rparam = board.buffer[4] & parseInt("01",2);
+    board.emit('DHT11-' + rpin + '-' + rparam, response);
+  }
 };
-
 /**
  * @class The Board object represents an arduino board.
  * @augments Emitter
@@ -647,7 +721,7 @@ export class Firmata extends Emitter {
         } else if (first === START_SYSEX && (this.buffer.length > 0)) {
           // we have a new command after an incomplete sysex command
           let currByte = data[i];
-          if (currByte > 0x7F) {
+          if (currByte > 0xF7) { //0x7F changed to 0xF7 for SA5 firmata features
             this.buffer.length = 0;
             this.buffer.push(currByte);
           }

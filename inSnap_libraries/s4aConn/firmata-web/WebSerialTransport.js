@@ -45,7 +45,9 @@ export class WebSerialTransport extends Emitter {
       // Allow the serial port to be closed later.
       // writer.releaseLock();
   
-      cb()
+      if (typeof cb === 'function') {
+          cb()
+      }
     }
   }
   
