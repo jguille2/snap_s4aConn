@@ -115,6 +115,12 @@ s4aConnector.prototype.disconnected = function (message) {
     );
 };
 
+s4aConnector.prototype.isBoardReady = function () {
+    //return ((typeof this.board !== 'undefined') 
+    //        && (this.board.pins.length > 0));
+    return Boolean(this.board);
+};
+
 // From Snap4Arduino threads.js
 
 s4aConnector.prototype.digitalWrite = function (pin, value, proc) {
@@ -219,6 +225,10 @@ s4aConnector.prototype.reportAnalogReading = function (pin, proc) {
     }
 };
 
+s4aConnector.prototype.reportConnected = function () {
+    return this.isBoardReady();
+};
+
 // S4A Connector buttons
 
 SnapExtensions.buttons.palette.push({
@@ -307,6 +317,15 @@ SnapExtensions.primitives.set(
         var stage = this.parentThatIsA(StageMorph);
         if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
         return stage.s4aConnector.reportAnalogReading(pin, proc);
+    }
+);
+
+SnapExtensions.primitives.set(
+    's4a_reportConnected',
+    function () {
+        var stage = this.parentThatIsA(StageMorph);
+        if (!stage.s4aConnector) { return; }
+        return stage.s4aConnector.reportConnected();
     }
 );
 
