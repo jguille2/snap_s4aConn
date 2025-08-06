@@ -121,6 +121,22 @@ s4aConnector.prototype.isBoardReady = function () {
     return Boolean(this.board);
 };
 
+s4aConnector.prototype.pinsSettableToMode = function (aMode) {
+    // Retrieve an object with a list of pins that support a particular mode
+    var myself = this,
+        pinNumbers = {};
+    this.board.pins.forEach(
+        function (each) { 
+            if (each.supportedModes.indexOf(aMode) > -1) { 
+                var number = myself.board.pins.indexOf(each).toString(); 
+                pinNumbers[number] = number;
+            }
+        }
+    );
+
+    return pinNumbers;
+};
+
 // From Snap4Arduino threads.js
 
 s4aConnector.prototype.digitalWrite = function (pin, value, proc) {
@@ -272,6 +288,54 @@ SnapExtensions.buttons.palette.push({
         stage.s4aConnector = new s4aConnector(stage);
     }
 })();
+
+// S4A Connector menu extensions - From Snap4Arduino blocks.js
+
+SnapExtensions.menus.set(
+    's4a_digitalPinMenu',
+    function () {
+        var target = this.parentThatIsA(BlockMorph).scriptTarget(),
+            s4aConnector = target.parentThatIsA(StageMorph).s4aConnector,
+            dict = {};
+        // All digitals have modes INPUT, OUTPUT, SERVO AND PULLUP
+        if (s4aConnector.board) {dict = s4aConnector.pinsSettableToMode(s4aConnector.board.MODES.INPUT); }
+        return dict;
+    }// All digitals have modes INPUT, OUTPUT, SERVO AND PULLUP
+);
+
+SnapExtensions.menus.set(
+    's4a_pwmPinMenu',
+    function () {
+        var target = this.parentThatIsA(BlockMorph).scriptTarget(),
+            s4aConnector = target.parentThatIsA(StageMorph).s4aConnector,
+            dict = {};
+        if (s4aConnector.board) {
+            Object.keys(s4aConnector.pinsSettableToMode(s4aConnector.board.MODES.PWM)).forEach(
+                function (each) { dict[each + '~'] = each }
+            );
+        }
+        return dict;
+    }
+);
+
+SnapExtensions.menus.set(
+    's4a_analogPinMenu',
+    function () {
+        var target = this.parentThatIsA(BlockMorph).scriptTarget(),
+            s4aConnector = target.parentThatIsA(StageMorph).s4aConnector,
+            dict = {};
+        if (s4aConnector.board) {
+            var analogPin;
+            s4aConnector.board.analogPins.forEach(
+                function (each) {
+                    analogPin = (each - s4aConnector.board.analogPins[0]).toString();
+                    dict[analogPin] = analogPin;
+                }
+            );
+        }
+        return dict;
+    }
+);
 
 // S4A Connector extension
 
