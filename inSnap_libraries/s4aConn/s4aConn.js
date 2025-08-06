@@ -850,3 +850,37 @@ SnapExtensions.primitives.set(
         return board["IRrec"].toString(16);
     }
 );
+
+SnapExtensions.primitives.set(
+    's4a_neopixelConfig(pin, leds)',
+    function (pin, leds) {
+        var stage = this.parentThatIsA(StageMorph);
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        var board = stage.s4aConnector.board,
+            data = [0xF0, //START_SYSEX
+                   0x74,  //NEOPIXEL REGISTER
+                   parseInt(pin),
+                   parseInt(leds),
+                   0xF7  //END_SYSEX
+                   ];
+        board.transport.write(world.Buffer(data));
+    }
+);
+
+SnapExtensions.primitives.set(
+    's4a_neopixelLED(led, r, g, b)',
+    function (led, r, g, b) {
+        var stage = this.parentThatIsA(StageMorph);
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        var board = stage.s4aConnector.board,
+            data =[0xF0, //START_SYSEX
+            0x72,  //NEOPIXEL
+            parseInt(led),
+            parseInt(r),
+            parseInt(g),
+            parseInt(b),
+            0xF7  //END_SYSEX
+            ];
+        board.transport.write(world.Buffer(data));
+    }
+);
