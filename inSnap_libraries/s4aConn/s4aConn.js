@@ -858,7 +858,7 @@ SnapExtensions.primitives.set(
         if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
         var board = stage.s4aConnector.board,
             data = [0xF0, //START_SYSEX
-                   0x74,  //NEOPIXEL REGISTER
+                   0xD0,  //NEOPIXEL REGISTER
                    parseInt(pin),
                    parseInt(leds),
                    0xF7  //END_SYSEX
@@ -874,8 +874,9 @@ SnapExtensions.primitives.set(
         if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
         var board = stage.s4aConnector.board,
             data =[0xF0, //START_SYSEX
-            0x72,  //NEOPIXEL
-            parseInt(led),
+            0xD1,  //NEOPIXEL
+            Math.sign(parseInt(led)),
+            Math.abs(parseInt(led)),
             parseInt(r),
             parseInt(g),
             parseInt(b),
