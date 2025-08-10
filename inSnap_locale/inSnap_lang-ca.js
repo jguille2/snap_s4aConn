@@ -3,5 +3,18 @@
     "Connecting board...": "Connectant amb la placa...",
     "Your board has been connected. Happy prototyping!": "La placa s'ha connecat correctament.\nFeliç prototipatge!",
     "Connection closed.": "Placa desconnectada.",
-    "No board connected.": "No hi havia cap placa connectada."
+    "No board connected.": "No hi havia cap placa connectada.",
+    'stopped (1500)': 'aturat (1500)',
+    'stopped': 'aturat',
+    'clockwise (1500-1000)': 'sentit horari (1500-1000)',
+    'clockwise': 'sentit horari',
+    'counter-clockwise (1500-2000)': 'sentit anti-horari (1500-2000)',
+    'counter-clockwise': 'sentit anti-horari',
+    'disconnected': 'desconnectat',
+    'Enable': 'Activa',
+    'Disable': 'Desactiva',
+    'HIGH': 'ALT',
+    'LOW': 'BAIX',
+    'humidity': 'humitat',
+    'temperature': 'temperatura'
 }
