@@ -1,10 +1,16 @@
 // S4A Connector Extension
-// =================
+// =======================
+// 🄯 Joan Guillén i Pelegay
+// (jguille2), August 2025
+// ------------------------
 // Snap for All firmata boards Connector. Connecting Snap! to any Firmata compatible
 // board: UNO, Nano, Mega, Leonardo, Micro, Due, 101, ESP8266, NodeMCU...
 // to dynamically control their functionalities.
-// Firmata firmware uploaded is required.
-// -----------------
+//
+// Using Firmata protocol. StandardFirmata is enough to support the main features and I2C
+// Extended with the SA5Firmata project to support tone, pulses, ping, dht11, neopixels, IR..
+// https://github.com/jguille2/SA5
+// 
 // This extension wants to give continuity to the S4A and Snap4Arduino projects
 // (Citilab, Bernat Romagosa, Joan Guillén)
 //
@@ -150,7 +156,7 @@ s4aConnector.prototype.digitalWrite = function (pin, value, proc) {
         var val = value ? board.HIGH : board.LOW;
         board.digitalWrite(pin, val);
     } else {
-        throw new Error('Board not connected');
+        throw new Error('No board connected.');
     }
 };
 
@@ -164,7 +170,7 @@ s4aConnector.prototype.pwmWrite = function (pin, value, proc) {
         }
         board.analogWrite(pin, value);
     } else {
-        throw new Error('Board not connected');
+        throw new Error('No board connected.');
     }
 };
 
@@ -195,7 +201,7 @@ s4aConnector.prototype.servoWrite = function (pin, value, proc) {
         }
         board.servoWrite(pin, numericValue);
     } else {
-        throw new Error('Board not connected');
+        throw new Error('No board connected.');
     }
 };
 
@@ -216,7 +222,7 @@ s4aConnector.prototype.reportDigitalReading = function (pin, proc) {
         proc.pushContext('doYield');
         proc.pushContext();
     } else {
-        throw new Error('Board not connected');
+        throw new Error('No board connected.');
     }
 };
 
@@ -237,7 +243,7 @@ s4aConnector.prototype.reportAnalogReading = function (pin, proc) {
         proc.pushContext('doYield');
         proc.pushContext();
     } else {
-        throw new Error('Board not connected');
+        throw new Error('No board connected.');
     }
 };
 
@@ -343,7 +349,9 @@ SnapExtensions.primitives.set(
     's4a_digitalWrite(pin, value)',
     function (pin, value, proc) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         stage.s4aConnector.digitalWrite(pin, value, proc);
     }
 );
@@ -352,7 +360,9 @@ SnapExtensions.primitives.set(
     's4a_pwmWrite(pin, value)',
     function (pin, value, proc) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         stage.s4aConnector.pwmWrite(pin, value, proc);
     }
 );
@@ -361,7 +371,9 @@ SnapExtensions.primitives.set(
     's4a_servoWrite(pin, value)',
     function (pin, value, proc) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         stage.s4aConnector.servoWrite(pin, value, proc);
     }
 );
@@ -370,7 +382,9 @@ SnapExtensions.primitives.set(
     's4a_reportDigitalReading(pin)',
     function (pin, proc) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         return stage.s4aConnector.reportDigitalReading(pin, proc);
     }
 );
@@ -379,7 +393,9 @@ SnapExtensions.primitives.set(
     's4a_reportAnalogReading(pin)',
     function (pin, proc) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         return stage.s4aConnector.reportAnalogReading(pin, proc);
     }
 );
@@ -388,7 +404,9 @@ SnapExtensions.primitives.set(
     's4a_reportConnected',
     function () {
         var stage = this.parentThatIsA(StageMorph);
-        if (!stage.s4aConnector) { return; }
+        if (!stage.s4aConnector) {
+            throw new Error('No board connected.');
+        }
         return stage.s4aConnector.reportConnected();
     }
 );
@@ -397,7 +415,9 @@ SnapExtensions.primitives.set(
     's4a_i2cwrite(address, bytes, reg)',
     function (address, bytes, reg) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (!board.i2cEnabled) {
             board.i2cConfig();
@@ -411,7 +431,9 @@ SnapExtensions.primitives.set(
     's4a_i2csend(address, bytes)',
     function (address, bytes) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (!board.i2cEnabled) {
             board.i2cConfig();
@@ -425,7 +447,9 @@ SnapExtensions.primitives.set(
     's4a_i2cread1(address, reg)',
     function (address, reg) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         board['i2cResponse-' + Number(address)] = null;
         if (!board.i2cEnabled) {
@@ -445,7 +469,9 @@ SnapExtensions.primitives.set(
     's4a_i2cread2(address)',
     function (address) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         return board['i2cResponse-' + Number(address)] !== null;
     }
@@ -455,7 +481,9 @@ SnapExtensions.primitives.set(
     's4a_i2cread3(address)',
     function (address) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         return new List(board['i2cResponse-' + Number(address)]);
     }
@@ -465,13 +493,15 @@ SnapExtensions.primitives.set(
     's4a_tone(pin, freq, dur)',
     function (pin, freq, dur) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_tone or SA5Firmata_ir firmware");
         }
         if (pin === undefined || freq === undefined || pin <= 1 || pin > 255 || freq < 0 || freq > 65535) {
-            throw new Error("Required var pin (2-255) and frequency (0-65535)");
+            throw new Error("Required values: pin (2-255) and frequency (0-65535)");
         }
         var dur = dur || 0;
         dur = dur & 0xFFFF; //clamping value to 32 bits
@@ -495,7 +525,9 @@ SnapExtensions.primitives.set(
     's4a_pulseOut(pin, stValue, time1, time2, time3)',
     function (pin, stValue, time1, time2, time3) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_tone or SA5Firmata_ir firmware");
@@ -503,7 +535,7 @@ SnapExtensions.primitives.set(
         var value = 1;
         if (stValue == "LOW") {value = 0;} //only explicit LOW causes a low pulse 
         if (pin === undefined || pin <= 1 || pin > 255) {
-            throw new Error("Required var pin (2-255)");
+            throw new Error("Required values: pin (2-255)");
         }
         //undefined time will be 0 seconds
         var time1 = time1 || 0,
@@ -531,7 +563,9 @@ SnapExtensions.primitives.set(
     's4a_pulseIn1(pin, stValue, timeout)',
     function (pin, stValue, timeout) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board,
             value = 1;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
@@ -540,7 +574,7 @@ SnapExtensions.primitives.set(
         board["pulseIn-"+pin] = null;
         if (stValue == "LOW") {value = 0;} //only explicit LOW return a low pulse 
         if (pin === undefined || pin <= 1 || pin > 255) {
-            throw new Error("Required var pin (2-255)");
+            throw new Error("Required values: pin (2-255)");
         }
         var timeout = timeout || 0; //undefined will be 0, and 0 causes Arduino's default (1s)
         timeout = timeout & 0xFFFFFFFF; //clamping value to 32 bits
@@ -563,7 +597,9 @@ SnapExtensions.primitives.set(
     's4a_pulseIn2(pin)',
     function (pin) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_tone or SA5Firmata_ir firmware");
@@ -576,7 +612,9 @@ SnapExtensions.primitives.set(
     's4a_pulseIn3(pin)',
     function (pin) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_tone or SA5Firmata_ir firmware");
@@ -589,14 +627,16 @@ SnapExtensions.primitives.set(
     's4a_ping1(pinRec, pinSen, time1, time2)',
     function (pinRec, pinSen, time1, time2) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_tone or SA5Firmata_ir firmware");
         }
         board["ping-"+pinRec] = null;
         if (pinSen === undefined || pinSen <= 1 || pinSen > 255 || pinRec === undefined || pinRec <= 1 || pinRec > 255) {
-            throw new Error("Required vars pinSen and pinRec (2-255)");
+            throw new Error("Required values: pin (2-255)");
         }
         board.once("ping-"+pinRec, function(data){board["ping-"+pinRec] = data;});
         var data =[0xF0, //START_SYSEX
@@ -615,7 +655,9 @@ SnapExtensions.primitives.set(
     's4a_ping2(pinRec)',
     function (pinRec) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_tone or SA5Firmata_ir firmware");
@@ -628,7 +670,9 @@ SnapExtensions.primitives.set(
     's4a_ping3(pinRec)',
     function (pinRec) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_tone or SA5Firmata_ir firmware");
@@ -643,7 +687,9 @@ SnapExtensions.primitives.set(
     's4a_nunchuk1(command)',
     function (command) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_tone or SA5Firmata_ir firmware");
@@ -670,7 +716,9 @@ SnapExtensions.primitives.set(
     's4a_nunchuk2(command)',
     function (command) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_tone or SA5Firmata_ir firmware");
@@ -683,7 +731,9 @@ SnapExtensions.primitives.set(
     's4a_nunchuk3(command)',
     function (command) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_tone or SA5Firmata_ir firmware");
@@ -696,7 +746,9 @@ SnapExtensions.primitives.set(
     's4a_dht111(pin, param)',
     function (pin, param) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_tone or SA5Firmata_ir firmware");
@@ -705,7 +757,7 @@ SnapExtensions.primitives.set(
         if (param == "temperature") sparam = 1;
         board["DHT11-"+pin+"-"+sparam] = null;
         if (pin === undefined || pin <= 1 || pin > 63) {
-            throw new Error("Required var pin (2-63)");
+            throw new Error("Required values: pin (2-63)");
         }
         board.once("DHT11-"+pin+"-"+sparam, function(data){board["DHT11-"+pin+"-"+sparam] = data;});
         var data =[0xF0, //START_SYSEX
@@ -721,7 +773,9 @@ SnapExtensions.primitives.set(
     's4a_dht112(pin, param)',
     function (pin, param) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_tone or SA5Firmata_ir firmware");
@@ -736,7 +790,9 @@ SnapExtensions.primitives.set(
     's4a_dht113(pin, param)',
     function (pin, param) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[5].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_tone or SA5Firmata_ir firmware");
@@ -755,7 +811,9 @@ SnapExtensions.primitives.set(
     's4a_irsend(message, coder)',
     function (message, coder) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[6].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_ir firmware");
@@ -786,7 +844,9 @@ SnapExtensions.primitives.set(
     's4a_irenable(ac)',
     function (ac) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[6].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_ir firmware");
@@ -809,7 +869,9 @@ SnapExtensions.primitives.set(
     's4a_irread1()',
     function () {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[6].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_ir firmware");
@@ -829,7 +891,9 @@ SnapExtensions.primitives.set(
     's4a_irread2()',
     function () {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[6].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_ir firmware");
@@ -842,7 +906,9 @@ SnapExtensions.primitives.set(
     's4a_irread3()',
     function () {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { ret
+            throw new Error('No board connected.');
+        }
         var board = stage.s4aConnector.board;
         if (board.pins[6].supportedModes.indexOf(0x05) === -1) {
             throw new Error("This block needs a device running SA5Firmata_ir firmware");
@@ -855,9 +921,14 @@ SnapExtensions.primitives.set(
     's4a_neopixelConfig(pin, leds)',
     function (pin, leds) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
-        var board = stage.s4aConnector.board,
-            data = [0xF0, //START_SYSEX
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
+        var board = stage.s4aConnector.board;
+        if (board.pins[3].supportedModes.indexOf(0x05) === -1) {
+            throw new Error("This block needs a device running v6 of SA5Firmata_tone or SA5Firmata_ir firmware");
+        }
+        var data = [0xF0, //START_SYSEX
                    0xD0,  //NEOPIXEL REGISTER
                    parseInt(pin),
                    parseInt(leds),
@@ -871,9 +942,14 @@ SnapExtensions.primitives.set(
     's4a_neopixelLED(led, r, g, b)',
     function (led, r, g, b) {
         var stage = this.parentThatIsA(StageMorph);
-        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) { return; }
-        var board = stage.s4aConnector.board,
-            data =[0xF0, //START_SYSEX
+        if (!(stage.s4aConnector && stage.s4aConnector.board && stage.s4aConnector.board.isReady)) {
+            throw new Error('No board connected.');
+        }
+        var board = stage.s4aConnector.board;
+        if (board.pins[3].supportedModes.indexOf(0x05) === -1) {
+            throw new Error("This block needs a device running v6 of SA5Firmata_tone or SA5Firmata_ir firmware");
+        }
+        var data =[0xF0, //START_SYSEX
             0xD1,  //NEOPIXEL
             Math.sign(parseInt(led)),
             Math.abs(parseInt(led)),
