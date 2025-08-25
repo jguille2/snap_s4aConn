@@ -1,0 +1,35 @@
+<p>S4A Connector requires <strong>boards with Firmata firmware</strong>
+  uploaded. A lot of devices support Standard Firmata. It is tested on
+  <strong>UNO</strong>, <strong>Nano</strong>, <strong>Mega</strong>,
+  <strong>Leonardo</strong>, <strong>Micro</strong>, <strong>Due</strong>,
+  <strong>101</strong>, <strong>ESP8266</strong> and <strong>NodeMCU</strong>.
+</p>
+<h6>Uploading Firmata firmwares direcly your UNO compatible board:</h6>
+<ul>
+  <li>Be sure you are using Chromium/Chrome/Edge browser and you are under <a
+      href="https://snap.creativelearninglab.click/course/view.php?id=2">https</a>
+  </li>
+  <li>Plug your UNO by USB</li>
+  <li>Choose your firmware and just upload it!</li>
+</ul>
+<select id="firmwareSelector" style="padding: 3px; background-color: #eeeeee;">
+  <option value="UNO_FirmataSA5Tone">FirmataSA5 v6 tone (recomended)</option>
+  <option value="UNO_FirmataSA5Ir">FirmataSA5 v6 ir</option>
+  <option value="UNO_FirmataSt">Firmata Standard</option>
+</select>
+<p><button id="webUploaderButton"
+    style="margin-top: 5px; border-width: 0px; border-radius: 25px;"><i
+      class="fa fa-play-circle"></i> Upload</button></p>
+<iframe id="firmwareUploader" tabindex="-1" title="empty" hidden=""
+    src="/z_outsiders/firmwareUploader/uploader.html" width="0" height="0"></iframe>
+<script>
+    var upButton = document.getElementById('webUploaderButton');
+    upButton.addEventListener('click', function() {
+      var selectElement = document.getElementById('firmwareSelector'),
+        currentSelectValue = selectElement.value,
+        iframe = document.getElementById('firmwareUploader');
+      iframe.contentWindow.document.getElementById(currentSelectValue)
+        .click();
+    });
+</script>
+
